@@ -1,6 +1,5 @@
-const jwt = await import("jsonwebtoken");
-const { getFirebaseAdmin } = await import("../config/firebaseAdmin");
-const User = await import("../models/User.model");
+import jwt from "jsonwebtoken";
+import User from "../models/User.model.js";
 
 const auth = async (req, res, next) => {
   try {

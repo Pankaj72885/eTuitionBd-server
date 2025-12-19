@@ -1,18 +1,15 @@
 import dotenv from "dotenv";
-dotenv.config();
 import mongoose from "mongoose";
 import app from "./app.js";
 import { initializeFirebase } from "./config/firebaseAdmin.js";
 import { initializeStripe } from "./config/stripe.js";
+dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB");
 

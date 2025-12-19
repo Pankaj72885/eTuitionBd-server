@@ -1,25 +1,24 @@
-import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
 import path from "path";
-import dotenv from "dotenv";
 dotenv.config();
 
 // Import routes
+import applicationRoutes from "./routes/application.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import tuitionRoutes from "./routes/tuition.routes.js";
-import applicationRoutes from "./routes/application.routes.js";
-import paymentRoutes from "./routes/payment.routes.js";
-import reviewRoutes from "./routes/review.routes.js";
-import messageRoutes from "./routes/message.routes.js";
-import notificationRoutes from "./routes/notification.routes.js";
-import bookmarkRoutes from "./routes/bookmark.routes.js";
+// import paymentRoutes from "./routes/payment.routes.js";
+// import reviewRoutes from "./routes/review.routes.js";
+// import messageRoutes from "./routes/message.routes.js";
+// import notificationRoutes from "./routes/notification.routes.js";
+// import bookmarkRoutes from "./routes/bookmark.routes.js";
 
 // Import middleware
-import { errorHandler } from "./middleware/errorHandler.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
 
@@ -49,13 +48,13 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/tuitions", tuitionRoutes);
+// app.use("/api/tuitions", tuitionRoutes);
 app.use("/api/applications", applicationRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/messages", messageRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/bookmarks", bookmarkRoutes);
+// app.use("/api/payments", paymentRoutes);
+// app.use("/api/reviews", reviewRoutes);
+// app.use("/api/messages", messageRoutes);
+// app.use("/api/notifications", notificationRoutes);
+// app.use("/api/bookmarks", bookmarkRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

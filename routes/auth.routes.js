@@ -1,11 +1,11 @@
-const express = await import("express");
-const { body } = await import("express-validator");
-const { auth } = await import("../middleware/auth");
-const {
-  register,
-  login,
+import express from "express";
+import { body } from "express-validator";
+import {
   getCurrentUser,
-} = await import("../controllers/auth.controller");
+  login,
+  register,
+} from "../controllers/auth.controller.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 

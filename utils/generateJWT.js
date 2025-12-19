@@ -1,4 +1,4 @@
-const jwt = await import("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const generateJWT = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -6,4 +6,4 @@ const generateJWT = (userId) => {
   });
 };
 
-export default generateJWT;
+export { generateJWT };

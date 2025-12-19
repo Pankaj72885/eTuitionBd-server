@@ -1,7 +1,6 @@
-const jwt = await import("jsonwebtoken");
-const { getFirebaseAdmin } = await import("../config/firebaseAdmin");
-const User = await import("../models/User.model");
-const { generateJWT } = await import("../utils/generateJWT");
+import { getFirebaseAdmin } from "../config/firebaseAdmin.js";
+import User from "../models/User.model.js";
+import { generateJWT } from "../utils/generateJWT.js";
 
 // Register user
 const register = async (req, res) => {
@@ -124,8 +123,4 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-export default {
-  register,
-  login,
-  getCurrentUser,
-};
+export { getCurrentUser, login, register };
