@@ -9,7 +9,7 @@ import {
   getTuitions,
   rejectTuition,
   updateTuition,
-} from "../controllers/tuition.controller";
+} from "../controllers/tuition.controller.js";
 import auth from "../middleware/auth.js";
 import role from "../middleware/role.js";
 

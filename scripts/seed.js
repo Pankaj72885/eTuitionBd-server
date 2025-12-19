@@ -1,28 +1,17 @@
 import dotenv from "dotenv";
-dotenv.config();
-const mongoose = await import("mongoose");
-const bcrypt = await import("bcryptjs");
-const User = await import("../models/User.model");
-const Tuition = await import("../models/Tuition.model");
-const Application = await import("../models/Application.model");
+import mongoose from "mongoose";
+import Application from "../models/Application.model.js";
+import Tuition from "../models/Tuition.model.js";
+import User from "../models/User.model.js";
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Connected to MongoDB for seeding");
-    seedData();
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
-    process.exit(1);
-  });
+dotenv.config();
 
 const seedData = async () => {
   try {
+    // Connect to MongoDB
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to MongoDB for seeding");
+
     // Clear existing data
     await User.deleteMany({});
     await Tuition.deleteMany({});
@@ -68,7 +57,7 @@ const seedData = async () => {
         firebaseUid: `tutor-uid-${i}`,
         name: `Tutor ${i}`,
         email: `tutor${i}@example.com`,
-        phone: `0171234568${i}`,
+        phone: `0181234567${i % 10}`,
         role: "tutor",
         city: ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Sylhet"][i % 5],
         qualifications: `Bachelor's in Education`,
@@ -136,3 +125,5 @@ const seedData = async () => {
     process.exit(1);
   }
 };
+
+seedData();
