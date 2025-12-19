@@ -1,26 +1,33 @@
-import express from "express";
-import cors from "cors";
-import connectDB from "./config/db.js";
-
-// Connect to Database
-connectDB();
-
-const app = express();
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cors());
-
-// Routes
-import userRoutes from "./routes/user.routes.js";
-app.use("/api/users", userRoutes);
-
-// Root Route
-app.get("/", (req, res) => {
-  res.send("API is running on Bun!");
-});
+import dotenv from "dotenv";
+dotenv.config();
+import mongoose from "mongoose";
+import app from "./app.js";
+import { initializeFirebase } from "./config/firebaseAdmin.js";
+import { initializeStripe } from "./config/stripe.js";
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+
+    // Initialize Firebase
+    initializeFirebase();
+
+    // Initialize Stripe
+    initializeStripe();
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
+    process.exit(1);
+  });
