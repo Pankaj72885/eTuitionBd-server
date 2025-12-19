@@ -1,0 +1,19 @@
+{
+  "name": "etuitionbd",
+  "version": "1.0.0",
+  "description": "e-tuition backend API with Bun runtime",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "bun server.js",
+    "dev": "bun --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
