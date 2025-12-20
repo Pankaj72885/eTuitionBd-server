@@ -80,10 +80,18 @@ const updateUserProfile = async (req, res) => {
       classLevels,
       bio,
       isAvailable,
+      isVerified, // Allow verifying via this endpoint if admin
     } = req.body;
 
+    let userId = req.user._id;
+
+    // If admin is updating another user
+    if (req.user.role === "admin" && req.params.id) {
+      userId = req.params.id;
+    }
+
     // Find user
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -94,6 +102,12 @@ const updateUserProfile = async (req, res) => {
     if (phone) user.phone = phone;
     if (city) user.city = city;
     if (photoUrl !== undefined) user.photoUrl = photoUrl;
+    if (bio) user.bio = bio; // Add missing bio field update
+
+    // Admin can update verification status
+    if (req.user.role === "admin" && isVerified !== undefined) {
+      user.isVerified = isVerified;
+    }
 
     // Tutor-specific fields
     if (user.role === "tutor") {
@@ -125,6 +139,7 @@ const updateUserProfile = async (req, res) => {
         averageRating: user.averageRating,
         reviewCount: user.reviewCount,
         isAvailable: user.isAvailable,
+        bio: user.bio,
       },
     });
   } catch (error) {
@@ -219,10 +234,10 @@ const toggleUserVerification = async (req, res) => {
 };
 
 export {
-  getAllUsers,
-  getUserById,
-  updateUserProfile,
   changeUserRole,
   deleteUser,
+  getAllUsers,
+  getUserById,
   toggleUserVerification,
+  updateUserProfile,
 };
