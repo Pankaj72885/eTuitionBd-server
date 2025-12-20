@@ -5,8 +5,6 @@ import { initializeFirebase } from "./config/firebaseAdmin.js";
 import { initializeStripe } from "./config/stripe.js";
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
-
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
@@ -20,9 +18,12 @@ mongoose
     initializeStripe();
 
     // Start server
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
+    if (process.env.NODE_ENV !== "production") {
+      const port = 5000;
+      app.listen(port, () => {
+        console.log(`Server running locally on port ${port}`);
+      });
+    }
   })
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
