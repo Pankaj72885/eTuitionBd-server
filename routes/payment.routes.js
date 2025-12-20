@@ -1,5 +1,7 @@
 import express from "express";
 import {
+  approvePayment,
+  createManualPayment,
   createPaymentIntent,
   getAllPayments,
   getStudentPayments,
@@ -16,7 +18,9 @@ router.use(auth);
 
 // Routes
 router.post("/create-intent", role("student"), createPaymentIntent);
+router.post("/manual", role("student"), createManualPayment);
 router.post("/webhook", stripeWebhook);
+router.put("/:id/approve", role("admin"), approvePayment);
 router.get("/student", role("student"), getStudentPayments);
 router.get("/tutor", role("tutor"), getTutorPayments);
 router.get("/admin", role("admin"), getAllPayments);

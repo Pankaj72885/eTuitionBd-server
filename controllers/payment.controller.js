@@ -158,7 +158,10 @@ export const getStudentPayments = async (req, res) => {
     const { page = 1, limit = 10, from, to } = req.query;
 
     // Build query
-    const query = { studentId: req.user._id, status: "Succeeded" };
+    const query = {
+      studentId: req.user._id,
+      status: { $in: ["Succeeded", "PendingApproval"] },
+    };
 
     if (from || to) {
       query.createdAt = {};
@@ -240,7 +243,7 @@ export const getAllPayments = async (req, res) => {
     const { page = 1, limit = 10, from, to } = req.query;
 
     // Build query
-    const query = { status: "Succeeded" };
+    const query = {}; // Admin sees all payments (Succeeded, PendingApproval, Failed)
 
     if (from || to) {
       query.createdAt = {};
@@ -272,6 +275,110 @@ export const getAllPayments = async (req, res) => {
     });
   } catch (error) {
     console.error("Get all payments error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Create Manual Payment (Demo Mode)
+export const createManualPayment = async (req, res) => {
+  try {
+    const { applicationId } = req.body;
+
+    // Get application details
+    const application = await Application.findById(applicationId)
+      .populate("tuitionId")
+      .populate("tutorId");
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (application.status === "Approved") {
+      return res.status(400).json({ message: "Application already approved" });
+    }
+
+    // Create payment record
+    const payment = new Payment({
+      studentId: req.user._id,
+      tutorId: application.tutorId._id,
+      tuitionId: application.tuitionId._id,
+      applicationId: application._id,
+      amount: application.expectedSalary,
+      stripePaymentIntentId: "MANUAL_" + Date.now(),
+      status: "PendingApproval", // Wait for admin approval
+    });
+
+    await payment.save();
+
+    // Update application status
+    await Application.findByIdAndUpdate(applicationId, {
+      status: "Approved",
+    });
+
+    // Update tuition status
+    await Tuition.findByIdAndUpdate(application.tuitionId._id, {
+      status: "Ongoing",
+    });
+
+    // Create notifications
+    await Notification.create([
+      {
+        type: "payment_success",
+        message: "Payment submitted. Waiting for Admin Approval.",
+        link: "/dashboard/student/payments",
+      },
+      /*
+       * Notification for tutor is intentionally omitted here.
+       * Tutor receives notification ONLY after Admin approves the payment.
+       */
+    ]);
+
+    res.status(200).json({ success: true, payment });
+  } catch (error) {
+    console.error("Create manual payment error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Approve Payment (Admin)
+export const approvePayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const payment = await Payment.findById(id)
+      .populate("tutorId")
+      .populate("studentId");
+    if (!payment) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    if (payment.status === "Succeeded") {
+      return res.status(400).json({ message: "Payment already approved" });
+    }
+
+    // Update payment status
+    payment.status = "Succeeded";
+    await payment.save();
+
+    // Create notifications
+    await Notification.create([
+      {
+        userId: payment.studentId._id,
+        type: "payment_approved",
+        message: "Your payment has been approved by admin.",
+        link: "/dashboard/student/payments",
+      },
+      {
+        userId: payment.tutorId._id,
+        type: "payment_received",
+        message: "Payment released by admin. Funds added to your account.",
+        link: "/dashboard/tutor/revenue",
+      },
+    ]);
+
+    res.status(200).json({ success: true, payment });
+  } catch (error) {
+    console.error("Approve payment error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
