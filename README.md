@@ -125,6 +125,25 @@ The **eTuitionBd Server** is a robust RESTful API that powers the eTuitionBd pla
 
 ---
 
+## 🧩 Challenges & Technical Solutions
+
+### 1. Hybrid Authentication System
+
+**Challenge**: The frontend uses Firebase for ease of login, but the backend requires granular role-based access control (Student vs Tutor vs Admin) that Firebase's standard claims didn't fully satisfy for our complex schema.
+**Solution**: We implemented a token exchange pattern. The client sends a Firebase ID token; the server validates it via `firebase-admin`, retrieves/creates the user in MongoDB, and signs a custom JWT containing the specific `role` and `_id`. This JWT is then used for all subsequent secure API calls.
+
+### 2. High-Performance Analytics
+
+**Challenge**: The Admin Dashboard needs to show real-time revenue and plotting data (e.g., "Last 6 Months Income"). Naively fetching all payments and filtering in code was O(n) and memory-intensive.
+**Solution**: We utilized **MongoDB Aggregation Pipelines** (`$match`, `$group`, `$project`) to perform the heavy lifting at the database level. For chart data, we group payments by month and year directly in the query, returning only the 6 datapoints needed by the frontend.
+
+### 3. Secure Payment Webhooks
+
+**Challenge**: Ensuring that tuition status updates only occur after a confirmed payment from Stripe, preventing fraudulent "free" approvals.
+**Solution**: We implemented a robust Stripe Webhook handler. It verifies the Stripe signature to ensure authenticity, checks specifically for `payment_intent.succeeded`, and then performs an atomic DB transaction to update the `Payment` status to "Succeeded" and the `Tuition` status to "Ongoing".
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
