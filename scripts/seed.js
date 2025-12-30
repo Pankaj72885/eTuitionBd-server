@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import Application from "../models/Application.model.js";
+import Payment from "../models/Payment.model.js";
 import Tuition from "../models/Tuition.model.js";
 import User from "../models/User.model.js";
 
@@ -16,6 +17,7 @@ const seedData = async () => {
     await User.deleteMany({});
     await Tuition.deleteMany({});
     await Application.deleteMany({});
+    await Payment.deleteMany({});
 
     console.log("Cleared existing data");
 
@@ -28,6 +30,8 @@ const seedData = async () => {
       role: "admin",
       city: "Dhaka",
       isVerified: true,
+      photoUrl:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
     });
 
     await adminUser.save();
@@ -44,6 +48,7 @@ const seedData = async () => {
         role: "student",
         city: ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Sylhet"][i - 1],
         isVerified: true,
+        photoUrl: `https://ui-avatars.com/api/?name=Student+${i}&background=random`,
       });
 
       students.push(await student.save());
@@ -69,6 +74,7 @@ const seedData = async () => {
         isVerified: true,
         averageRating: 4 + Math.random(),
         reviewCount: Math.floor(Math.random() * 50) + 1,
+        photoUrl: `https://ui-avatars.com/api/?name=Tutor+${i}&background=random`,
       });
 
       tutors.push(await tutor.save());
@@ -101,22 +107,57 @@ const seedData = async () => {
     }
     console.log("Created sample tuitions");
 
-    // Create sample applications
-    for (let i = 0; i < 20; i++) {
+    // Create sample applications and payments
+    const applications = [];
+    const payments = [];
+
+    // Helper to get a random date within the last n months
+    const getRandomDate = (monthsBack) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - Math.floor(Math.random() * monthsBack));
+      date.setDate(Math.floor(Math.random() * 28) + 1);
+      return date;
+    };
+
+    for (let i = 0; i < 30; i++) {
+      const tuition = tuitions[i % tuitions.length];
+      const tutor = tutors[i % tutors.length];
+
       const application = new Application({
-        tuitionId: tuitions[i % tuitions.length]._id,
-        tutorId: tutors[i % tutors.length]._id,
+        tuitionId: tuition._id,
+        tutorId: tutor._id,
         qualifications: "Bachelor's in Education",
-        experience: `${
-          tutors[i % tutors.length].experienceYears
-        } years of teaching experience`,
+        experience: `${tutor.experienceYears} years of teaching experience`,
         expectedSalary: 4000 + i * 300,
-        status: ["Pending", "Approved", "Rejected"][i % 3],
+        status: i % 4 === 0 ? "Approved" : ["Pending", "Rejected"][i % 2],
       });
 
-      await application.save();
+      const savedApp = await application.save();
+      applications.push(savedApp);
+
+      // Create payment for approved/some applications
+      if (application.status === "Approved" || i % 5 === 0) {
+        const paymentDate = getRandomDate(6); // Last 6 months
+        const amount = 500 + Math.floor(Math.random() * 2000); // Fee/Payment
+
+        const payment = new Payment({
+          studentId: tuition.studentId,
+          tutorId: tutor._id,
+          tuitionId: tuition._id,
+          applicationId: savedApp._id,
+          amount: amount,
+          stripePaymentIntentId: `pi_mock_${Date.now()}_${i}`,
+          status: "Succeeded",
+          paymentMethod: ["card", "mobile_banking"][i % 2],
+          createdAt: paymentDate,
+          updatedAt: paymentDate,
+        });
+
+        payments.push(await payment.save());
+      }
     }
-    console.log("Created sample applications");
+    console.log(`Created ${applications.length} sample applications`);
+    console.log(`Created ${payments.length} sample payments with history`);
 
     console.log("Database seeded successfully");
     process.exit(0);
