@@ -794,7 +794,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Pankaj Kumar**
+**Pankaj Bepari**
 
 - GitHub: [@Pankaj72885](https://github.com/Pankaj72885)
 - Email: contact@etuitionbd.com
