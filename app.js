@@ -23,6 +23,10 @@ import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
 
+// Trust proxy - Required for Railway/cloud deployment behind proxy
+// This fixes express-rate-limit X-Forwarded-For header issues
+app.set("trust proxy", 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
